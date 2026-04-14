@@ -133,7 +133,12 @@
   /* Success */
   .success-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px; }
   .success-overlay.show { display: flex; }
-  .success-card { background: #fff; border-radius: 24px; padding: 44px 32px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: popIn 0.4s ease; }
+  .success-card { background: #fff; border-radius: 24px; padding: 44px 32px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: popIn 0.4s ease; position: relative; }
+  .success-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f0f0ec; color: #999; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; line-height: 1; }
+  .success-close:hover { background: #e0e0dc; color: #333; }
+  .success-close:active { transform: scale(0.9); }
+  .success-btn { display: inline-flex; align-items: center; justify-content: center; margin-top: 24px; padding: 14px 40px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(45,90,39,0.25); }
+  .success-btn:active { transform: scale(0.97); }
   .success-icon { width: 72px; height: 72px; background: var(--primary-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 36px; }
   .success-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--primary); }
   .success-card p { font-size: 14px; color: var(--text-sub); line-height: 1.7; }
@@ -380,11 +385,13 @@
   </div>
 </form>
 <div class="footer">© 2026 봄봄매트 · 층간소음매트 1위 · <a href="#">bombommat.com</a></div>
-<div class="success-overlay" id="successOverlay">
+<div class="success-overlay" id="successOverlay" onclick="closeSuccess(event)">
   <div class="success-card">
+    <button class="success-close" onclick="closeSuccess(event, true)" aria-label="닫기">✕</button>
     <div class="success-icon">🎉</div>
     <h3>설문이 제출되었습니다!</h3>
     <p>소중한 의견 감사합니다.<br>입력하신 연락처로 스타벅스 기프티콘이<br>발송될 예정입니다.</p>
+    <button class="success-btn" onclick="closeSuccess(event, true)">확인</button>
   </div>
 </div>
 <script>
@@ -437,6 +444,12 @@
     document.getElementById('successOverlay').classList.add('show');
     document.getElementById('progressBar').style.width = '100%';
     return false;
+  }
+  function closeSuccess(e, force) {
+    if (force || e.target === document.getElementById('successOverlay')) {
+      document.getElementById('successOverlay').classList.remove('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 </script>
 </body>
