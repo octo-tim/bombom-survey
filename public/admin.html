@@ -193,6 +193,28 @@ var ACCOUNTS = [
 // ─── Demo Data ───
 var DATA=[];
 
+// 서버에서 데이터 로드
+function loadData(callback){
+  fetch('/api/responses')
+  .then(function(res){return res.json()})
+  .then(function(data){
+    DATA=data.map(function(r,i){
+      r.id=r.id||i+1;
+      r.q8=r.q8_product||r.q8||'';
+      r.q11=r.q11_service||r.q11||'';
+      r.q13=r.q13_consult||r.q13||'';
+      r.date=r.date||(r.timestamp?r.timestamp.slice(0,10):'');
+      return r;
+    });
+    if(callback)callback();
+  })
+  .catch(function(err){
+    console.error('Data load error:',err);
+    DATA=[];
+    if(callback)callback();
+  });
+}
+
 var RATINGS=["탁월함","우수함","보통","부족함","나쁨"];
 var RCOLORS={"탁월함":"#2D5A27","우수함":"#4A8B3F","보통":"#C8A951","부족함":"#E07B4C","나쁨":"#D94444"};
 var COLORS=["#2D5A27","#4A8B3F","#7CB972","#C8A951","#E8C468","#3A7D32","#8FD47A","#D4A843","#5B9E50","#A3D696"];
@@ -222,15 +244,22 @@ function handleLogin(e){
   return false;
 }
 function showLoginError(msg){var el=document.getElementById('loginError');document.getElementById('loginErrorMsg').textContent=msg;el.classList.add('show')}
-function handleLogout(){currentUser=null;document.getElementById('dashboard').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('loginBtn').disabled=false;document.getElementById('loginBtn').textContent='로그인';document.getElementById('loginPw').value='';document.getElementById('loginError').classList.remove('show');document.getElementById('loginWrap').style.animation='slideUp .6s ease both'}
+function handleLogout(){currentUser=null;document.getElementById('dashboard').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('loginBtn').disabled=false;document.getElementById('loginBtn').textContent='로그인';document.getElementById('loginPw').value='';document.getElementById('loginError').classList.remove('show');document.getElementById('loginWrap').style.animation='slideUp .6s ease both';if(window._refreshTimer)clearInterval(window._refreshTimer)}
 
 function showDashboard(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('dashboard').style.display='block';
   document.getElementById('userName').textContent=currentUser.name;
   document.getElementById('userRole').textContent=currentUser.role;
-  initFilters();
-  renderDashboard();
+  loadData(function(){
+    initFilters();
+    renderDashboard();
+  });
+  // 자동 새로고침 (30초)
+  if(window._refreshTimer)clearInterval(window._refreshTimer);
+  window._refreshTimer=setInterval(function(){
+    loadData(function(){renderDashboard()});
+  },30000);
 }
 
 // ─── Filters ───
