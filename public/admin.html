@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>봄봄매트 관리자</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:#F7F6F3;color:#1A1A1A;line-height:1.6;-webkit-font-smoothing:antialiased}
+:root{--p:#2D5A27;--pl:#4A8B3F;--pp:#E8F3E6;--a:#C8A951;--al:#F5EDD3;--bg:#F7F6F3;--card:#fff;--t:#1A1A1A;--ts:#6B6B6B;--b:#E5E5E0;--err:#D94444}
+
+/* ===== LOGIN ===== */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#1a3517,#2D5A27 35%,#1B3A17 70%,#0F2B0C);padding:20px;position:relative;overflow:hidden}
+#loginScreen .bg1{position:absolute;top:-30%;right:-20%;width:70vw;height:70vw;border-radius:50%;background:radial-gradient(circle,rgba(200,169,81,.06) 0%,transparent 70%);pointer-events:none}
+#loginScreen .bg2{position:absolute;bottom:-20%;left:-15%;width:50vw;height:50vw;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.03) 0%,transparent 60%);pointer-events:none}
+.login-wrap{width:100%;max-width:420px;position:relative;z-index:1;animation:slideUp .6s ease both}
+.login-logo{text-align:center;margin-bottom:36px}
+.login-logo .shield{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:20px;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);margin-bottom:16px;font-size:28px}
+.login-logo .badge{display:inline-block;background:rgba(200,169,81,.25);color:#C8A951;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;letter-spacing:1.5px;margin-bottom:8px}
+.login-logo h1{color:#fff;font-size:26px;font-weight:700;margin:0 0 4px}
+.login-logo p{color:rgba(255,255,255,.45);font-size:13px;margin:0}
+.login-card{background:rgba(255,255,255,.07);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:20px;padding:36px 32px 32px;border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 60px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.1)}
+.login-field{margin-bottom:18px}
+.login-field label{display:block;font-size:12px;font-weight:600;color:rgba(255,255,255,.55);margin-bottom:8px;letter-spacing:.5px}
+.login-field .iw{position:relative}
+.login-field .iw .ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.4}
+.login-field input{width:100%;padding:14px 16px 14px 46px;border-radius:12px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font-size:15px;font-family:inherit;outline:none;transition:all .25s}
+.login-field input:focus{border-color:rgba(200,169,81,.5);background:rgba(255,255,255,.1);box-shadow:0 0 0 4px rgba(200,169,81,.1)}
+.login-field input::placeholder{color:rgba(255,255,255,.25)}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;opacity:.4;padding:4px}
+.login-error{background:rgba(217,68,68,.15);border:1px solid rgba(217,68,68,.3);border-radius:10px;padding:10px 14px;margin-bottom:18px;display:none;align-items:center;gap:8px;animation:fadeIn .3s ease}
+.login-error.show{display:flex}
+.login-error span{color:#ff8a8a;font-size:13px;font-weight:500}
+.login-btn{width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#C8A951,#D4B85C,#C8A951);color:#1a1a1a;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;letter-spacing:.5px;box-shadow:0 4px 20px rgba(200,169,81,.3);display:flex;align-items:center;justify-content:center;gap:8px}
+.login-btn:disabled{background:rgba(200,169,81,.4);color:rgba(255,255,255,.6);cursor:wait;box-shadow:none}
+.login-btn .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+.login-hint{margin-top:24px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);text-align:center}
+.login-hint p{color:rgba(255,255,255,.3);font-size:11px;margin:0 0 8px;letter-spacing:.5px}
+.login-hint .accounts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.login-hint button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 14px;cursor:pointer;color:rgba(255,255,255,.5);font-size:11px;font-family:inherit;font-weight:500;transition:all .2s}
+.login-hint button:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+.login-footer{text-align:center;color:rgba(255,255,255,.2);font-size:11px;margin-top:24px}
+
+/* ===== DASHBOARD ===== */
+#dashboard{display:none}
+.dash-header{background:linear-gradient(135deg,#2D5A27,#1B3A17);padding:20px 24px}
+.dash-header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.dash-header .badge{background:rgba(200,169,81,.25);color:#C8A951;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;letter-spacing:1px}
+.dash-header h1{color:#fff;font-size:20px;font-weight:700;margin:0}
+.dash-header .user-info{text-align:right}
+.dash-header .user-name{color:#fff;font-size:13px;font-weight:600}
+.dash-header .user-role{color:rgba(255,255,255,.4);font-size:11px}
+.logout-btn{padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.logout-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+.dash-body{max-width:1200px;margin:0 auto;padding:20px 20px 60px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+.filters span{font-size:13px;font-weight:600;color:var(--ts)}
+.filters select{padding:8px 14px;border-radius:8px;border:1.5px solid var(--b);background:#fff;font-size:13px;font-family:inherit;color:var(--t);cursor:pointer;outline:none;min-width:120px}
+.filters .reset-btn{padding:8px 16px;border-radius:8px;border:none;background:var(--p);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.filters .count{margin-left:auto;font-size:13px;color:var(--ts)}
+.filters .count strong{color:var(--p)}
+.kpi-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.kpi{background:var(--card);border-radius:12px;padding:20px 22px;border:1px solid var(--b);flex:1 1 180px;min-width:155px}
+.kpi-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.kpi-icon{width:36px;height:36px;border-radius:10px;background:var(--pp);display:flex;align-items:center;justify-content:center;font-size:18px}
+.kpi-label{font-size:12px;color:var(--ts);font-weight:500}
+.kpi-val{font-size:28px;font-weight:700;color:var(--t);letter-spacing:-1px}
+.kpi-sub{font-size:12px;color:var(--ts);margin-top:4px}
+.sec-title{display:flex;align-items:center;gap:10px;margin:32px 0 16px}
+.sec-title .ico{width:32px;height:32px;border-radius:10px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}
+.sec-title h2{font-size:17px;font-weight:700;margin:0}
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.chart-card{background:var(--card);border-radius:14px;padding:22px 20px;border:1px solid var(--b);box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.chart-card-title{font-size:14px;font-weight:600;margin-bottom:16px}
+.confirm-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.confirm-item{flex:1 1 200px;background:var(--card);border-radius:12px;padding:18px 20px;border:1px solid var(--b)}
+.confirm-label{font-size:13px;color:var(--ts);margin-bottom:8px}
+.confirm-val{font-size:26px;font-weight:700}
+.confirm-bar{height:6px;border-radius:3px;background:#f0f0ec;margin-top:10px;overflow:hidden}
+.confirm-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.rating-bar{margin-bottom:12px}
+.rating-bar-head{display:flex;justify-content:space-between;margin-bottom:6px}
+.rating-bar-head span:first-child{font-size:13px;font-weight:500}
+.rating-bar-head span:last-child{font-size:12px;color:var(--ts)}
+.rating-bar-track{display:flex;gap:2px;height:28px;border-radius:6px;overflow:hidden;background:#f0f0ec}
+.rating-seg{display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:#f8f8f5;border-bottom:2px solid var(--b)}
+th{padding:10px 12px;text-align:left;font-weight:600;color:var(--ts);font-size:12px;white-space:nowrap}
+td{padding:10px 12px}
+tbody tr{border-bottom:1px solid var(--b)}
+tbody tr:nth-child(even){background:#fafaf7}
+.badge-rating{padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
+.team-table{max-height:260px;overflow-y:auto}
+.team-table thead tr{position:sticky;top:0;background:var(--card)}
+.team-table th{font-size:11px}
+.overflow-x{overflow-x:auto}
+
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shakeAnim{0%,100%{transform:translateX(0)}15%{transform:translateX(-8px)}30%{transform:translateX(8px)}45%{transform:translateX(-6px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}90%{transform:translateX(3px)}}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="bg1"></div><div class="bg2"></div>
+  <div class="login-wrap" id="loginWrap">
+    <div class="login-logo">
+      <div class="shield">🛡️</div>
+      <div><span class="badge">ADMIN</span></div>
+      <h1>봄봄매트</h1>
+      <p>설문조사 관리 시스템</p>
+    </div>
+    <div class="login-card">
+      <form id="loginForm" onsubmit="return handleLogin(event)">
+        <div class="login-field">
+          <label>아이디</label>
+          <div class="iw"><span class="ico">👤</span><input type="text" id="loginId" placeholder="관리자 아이디" autocomplete="username"></div>
+        </div>
+        <div class="login-field" style="margin-bottom:24px">
+          <label>비밀번호</label>
+          <div class="iw">
+            <span class="ico">🔒</span>
+            <input type="password" id="loginPw" placeholder="비밀번호" autocomplete="current-password">
+            <button type="button" class="pw-toggle" onclick="togglePw()">👁️</button>
+          </div>
+        </div>
+        <div class="login-error" id="loginError"><span>⚠️</span><span id="loginErrorMsg"></span></div>
+        <button type="submit" class="login-btn" id="loginBtn">로그인</button>
+      </form>
+      <div class="login-hint">
+        <p>테스트 계정</p>
+        <div class="accounts">
+          <button onclick="fillAccount('admin','bombom2026!')">admin / bombom2026!</button>
+          <button onclick="fillAccount('manager','manager123')">manager / manager123</button>
+        </div>
+      </div>
+    </div>
+    <p class="login-footer">© 2026 봄봄매트 · 층간소음매트 1위</p>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard">
+  <div class="dash-header">
+    <div class="dash-header-inner">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          <span class="badge">ADMIN</span>
+          <span style="color:rgba(255,255,255,.5);font-size:12px">봄봄매트</span>
+        </div>
+        <h1>설문조사 통계 대시보드</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="user-info"><div class="user-name" id="userName"></div><div class="user-role" id="userRole"></div></div>
+        <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+      </div>
+    </div>
+  </div>
+  <div class="dash-body">
+    <div class="filters">
+      <span>필터:</span>
+      <select id="fDate" onchange="renderDashboard()"><option>전체</option><option>최근 7일</option><option>최근 30일</option></select>
+      <select id="fRegion" onchange="renderDashboard()"></select>
+      <select id="fTeam" onchange="renderDashboard()"></select>
+      <button class="reset-btn" id="resetBtn" style="display:none" onclick="resetFilters()">초기화</button>
+      <div class="count">조회: <strong id="totalCount">0</strong>건</div>
+    </div>
+    <div class="kpi-row" id="kpiRow"></div>
+    <div class="sec-title"><div class="ico">📋</div><h2>시공 안내 확인율</h2></div>
+    <div class="confirm-row" id="confirmRow"></div>
+    <div class="sec-title"><div class="ico">⭐</div><h2>종합 평가 분석</h2></div>
+    <div class="chart-grid"><div class="chart-card"><div class="chart-card-title">평가 분포 (제품 · 시공 · 상담)</div><div id="ratingBars"></div></div><div class="chart-card"><div class="chart-card-title">시공팀별 평균 점수</div><div class="team-table" id="teamTable"></div></div></div>
+    <div class="sec-title"><div class="ico">📣</div><h2>유입 경로 & 선택 이유</h2></div>
+    <div class="chart-grid"><div class="chart-card"><div class="chart-card-title">유입 경로 (Q16)</div><div id="channelChart"></div></div><div class="chart-card"><div class="chart-card-title">선택 이유 (Q17)</div><div id="reasonChart"></div></div></div>
+    <div class="sec-title"><div class="ico">📝</div><h2>전체 응답 내역</h2></div>
+    <div class="chart-card"><div class="overflow-x" id="responseTable"></div></div>
+  </div>
+</div>
+
+<script>
+// ─── Auth ───
+var ACCOUNTS = [
+  {id:"admin",pw:"bombom2026!",name:"관리자",role:"최고 관리자"},
+  {id:"manager",pw:"manager123",name:"매니저",role:"매니저"}
+];
+
+// ─── Demo Data ───
+var DATA=[
+{id:1,name:"김민수",region:"서울특별시",subRegion:"강남구",q5:"네",q6:"네",q7:"네",q8:"탁월함",q9:"제품 품질이 매우 좋습니다",q10:"본사 시공11팀",q11:"탁월함",q12:"친절하고 깔끔한 시공",q13:"우수함",q14:"상담이 빠르고 정확",q15:"네",q16:"네이버 검색",q17:"제품의 품질",q18:"네",q19:"없음",date:"2026-04-01"},
+{id:2,name:"이지은",region:"경기도",subRegion:"수원시",q5:"네",q6:"네",q7:"아니오",q8:"우수함",q9:"소음 차단 효과 좋아요",q10:"본사 시공12팀",q11:"우수함",q12:"시간 약속 잘 지킴",q13:"탁월함",q14:"매우 친절한 상담",q15:"네",q16:"블로그",q17:"주위의 추천",q18:"네",q19:"색상 옵션 추가 희망",date:"2026-04-02"},
+{id:3,name:"박서준",region:"인천광역시",subRegion:"남동구",q5:"네",q6:"아니오",q7:"네",q8:"보통",q9:"가격 대비 괜찮음",q10:"본사 시공13팀",q11:"보통",q12:"시공 시간 다소 김",q13:"보통",q14:"대기시간 길었음",q15:"모르겠다",q16:"SNS (인스타그램)",q17:"가격",q18:"아니오",q19:"시공 시간 단축 요청",date:"2026-04-03"},
+{id:4,name:"최영희",region:"서울특별시",subRegion:"송파구",q5:"네",q6:"네",q7:"네",q8:"탁월함",q9:"층간소음 확실히 줄었어요",q10:"본사 시공11팀",q11:"탁월함",q12:"매우 만족",q13:"탁월함",q14:"전문적 상담",q15:"네",q16:"지인추천",q17:"주위의 추천",q18:"네",q19:"없음",date:"2026-04-04"},
+{id:5,name:"정우성",region:"경기도",subRegion:"성남시",q5:"네",q6:"네",q7:"네",q8:"우수함",q9:"품질 좋음",q10:"본사 시공14팀",q11:"우수함",q12:"꼼꼼한 시공",q13:"우수함",q14:"친절",q15:"네",q16:"웹사이트",q17:"브랜드 인지도",q18:"네",q19:"없음",date:"2026-04-05"},
+{id:6,name:"한소희",region:"부산광역시",subRegion:"해운대구",q5:"네",q6:"네",q7:"네",q8:"탁월함",q9:"완벽한 제품",q10:"부산경남지사",q11:"탁월함",q12:"최고 서비스",q13:"우수함",q14:"설명 자세함",q15:"네",q16:"유튜브",q17:"제품의 품질",q18:"네",q19:"부산 지사 최고!",date:"2026-04-05"},
+{id:7,name:"윤도현",region:"대구광역시",subRegion:"수성구",q5:"아니오",q6:"네",q7:"네",q8:"우수함",q9:"소음 차단 우수",q10:"대구경북지사",q11:"보통",q12:"시공 전 설명 부족",q13:"보통",q14:"전화 연결 어려움",q15:"네",q16:"네이버 검색",q17:"담당 직원의 설명",q18:"아니오",q19:"시공 전 안내 강화 요청",date:"2026-04-06"},
+{id:8,name:"송지효",region:"서울특별시",subRegion:"마포구",q5:"네",q6:"네",q7:"네",q8:"탁월함",q9:"아이 층간소음 해결!",q10:"본사 시공15팀",q11:"탁월함",q12:"시공팀 친절",q13:"탁월함",q14:"상담~시공 완벽",q15:"네",q16:"카페 및 커뮤니티",q17:"제품의 품질",q18:"네",q19:"없음",date:"2026-04-07"},
+{id:9,name:"강다니엘",region:"경기도",subRegion:"용인시",q5:"네",q6:"네",q7:"아니오",q8:"우수함",q9:"만족",q10:"본사 시공 21팀",q11:"우수함",q12:"깔끔한 시공",q13:"우수함",q14:"빠른 응대",q15:"네",q16:"블로그",q17:"브랜드 인지도",q18:"네",q19:"품질보증서 가독성 개선",date:"2026-04-08"},
+{id:10,name:"이수현",region:"강원도",subRegion:"춘천시",q5:"네",q6:"네",q7:"네",q8:"보통",q9:"나쁘지 않음",q10:"강원지사",q11:"우수함",q12:"먼 거리 잘 와주심",q13:"보통",q14:"상담 횟수 적었으면",q15:"모르겠다",q16:"전시회",q17:"가격",q18:"기타",q19:"강원 서비스 좋음",date:"2026-04-08"},
+{id:11,name:"김태리",region:"서울특별시",subRegion:"용산구",q5:"네",q6:"네",q7:"네",q8:"탁월함",q9:"두 번째 구매 역시 좋음",q10:"본사 시공16팀",q11:"탁월함",q12:"항상 만족",q13:"탁월함",q14:"VIP 느낌",q15:"네",q16:"지인추천",q17:"제품의 품질",q18:"네",q19:"없음",date:"2026-04-09"},
+{id:12,name:"오정세",region:"충청남도",subRegion:"천안시",q5:"네",q6:"아니오",q7:"네",q8:"우수함",q9:"합리적 가격",q10:"충청지사",q11:"보통",q12:"시공 후 설명 부족",q13:"우수함",q14:"친절",q15:"네",q16:"네이버 검색",q17:"가격",q18:"네",q19:"시공 후 관리법 안내 요청",date:"2026-04-10"},
+{id:13,name:"전지현",region:"경기도",subRegion:"고양시",q5:"네",q6:"네",q7:"네",q8:"탁월함",q9:"완전 추천!",q10:"본사 시공 22팀",q11:"우수함",q12:"전문 시공",q13:"탁월함",q14:"상담 퀄리티 최고",q15:"네",q16:"SNS (인스타그램)",q17:"주위의 추천",q18:"네",q19:"인스타 이벤트 요청",date:"2026-04-11"},
+{id:14,name:"류준열",region:"서울특별시",subRegion:"서초구",q5:"네",q6:"네",q7:"네",q8:"우수함",q9:"기대 이상",q10:"본사 시공11팀",q11:"탁월함",q12:"시공팀 에이스",q13:"우수함",q14:"빠른 상담",q15:"네",q16:"웹사이트",q17:"브랜드 인지도",q18:"네",q19:"없음",date:"2026-04-12"},
+{id:15,name:"배수지",region:"제주도",subRegion:"제주시",q5:"네",q6:"네",q7:"네",q8:"탁월함",q9:"제주까지 잘 배송",q10:"제주지사",q11:"탁월함",q12:"제주 지사 최고",q13:"우수함",q14:"친절한 안내",q15:"네",q16:"유튜브",q17:"제품의 품질",q18:"네",q19:"제주 배송비 무료 요청",date:"2026-04-13"}
+];
+
+var RATINGS=["탁월함","우수함","보통","부족함","나쁨"];
+var RCOLORS={"탁월함":"#2D5A27","우수함":"#4A8B3F","보통":"#C8A951","부족함":"#E07B4C","나쁨":"#D94444"};
+var COLORS=["#2D5A27","#4A8B3F","#7CB972","#C8A951","#E8C468","#3A7D32","#8FD47A","#D4A843","#5B9E50","#A3D696"];
+function rs(v){return{탁월함:5,우수함:4,보통:3,부족함:2,나쁨:1}[v]||0}
+function avg(arr,k){if(!arr.length)return"0.00";return(arr.reduce(function(s,r){return s+rs(r[k])},0)/arr.length).toFixed(2)}
+function countBy(arr,k){var m={};arr.forEach(function(r){var v=r[k];m[v]=(m[v]||0)+1});return Object.entries(m).map(function(e){return{name:e[0],value:e[1]}}).sort(function(a,b){return b.value-a.value})}
+function pct(n,t){return t>0?((n/t)*100).toFixed(1):"0"}
+
+var currentUser=null;
+
+// ─── Login Logic ───
+function fillAccount(id,pw){document.getElementById('loginId').value=id;document.getElementById('loginPw').value=pw;document.getElementById('loginError').classList.remove('show')}
+function togglePw(){var inp=document.getElementById('loginPw');var btn=inp.nextElementSibling;if(inp.type==='password'){inp.type='text';btn.textContent='🙈'}else{inp.type='password';btn.textContent='👁️'}}
+
+function handleLogin(e){
+  e.preventDefault();
+  var id=document.getElementById('loginId').value.trim();
+  var pw=document.getElementById('loginPw').value.trim();
+  if(!id||!pw){showLoginError("아이디와 비밀번호를 입력해주세요.");return false}
+  var btn=document.getElementById('loginBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div><span style="color:rgba(255,255,255,.8)">로그인 중...</span>';
+  setTimeout(function(){
+    var acc=ACCOUNTS.find(function(a){return a.id===id&&a.pw===pw});
+    if(acc){currentUser=acc;showDashboard()}
+    else{showLoginError("아이디 또는 비밀번호가 일치하지 않습니다.");btn.disabled=false;btn.textContent='로그인';document.getElementById('loginWrap').style.animation='shakeAnim .5s ease'}
+  },800);
+  return false;
+}
+function showLoginError(msg){var el=document.getElementById('loginError');document.getElementById('loginErrorMsg').textContent=msg;el.classList.add('show')}
+function handleLogout(){currentUser=null;document.getElementById('dashboard').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('loginBtn').disabled=false;document.getElementById('loginBtn').textContent='로그인';document.getElementById('loginPw').value='';document.getElementById('loginError').classList.remove('show');document.getElementById('loginWrap').style.animation='slideUp .6s ease both'}
+
+function showDashboard(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('userName').textContent=currentUser.name;
+  document.getElementById('userRole').textContent=currentUser.role;
+  initFilters();
+  renderDashboard();
+}
+
+// ─── Filters ───
+function initFilters(){
+  var regions=["전체"];DATA.forEach(function(r){if(regions.indexOf(r.region)===-1)regions.push(r.region)});
+  var teams=["전체"];DATA.forEach(function(r){if(teams.indexOf(r.q10)===-1)teams.push(r.q10)});
+  var rSel=document.getElementById('fRegion');rSel.innerHTML='';regions.forEach(function(r){var o=document.createElement('option');o.textContent=r;rSel.appendChild(o)});
+  var tSel=document.getElementById('fTeam');tSel.innerHTML='';teams.forEach(function(t){var o=document.createElement('option');o.textContent=t;tSel.appendChild(o)});
+}
+function getFiltered(){
+  var d=DATA.slice();
+  var dr=document.getElementById('fDate').value;
+  var rg=document.getElementById('fRegion').value;
+  var tm=document.getElementById('fTeam').value;
+  if(rg!=="전체")d=d.filter(function(r){return r.region===rg});
+  if(tm!=="전체")d=d.filter(function(r){return r.q10===tm});
+  if(dr==="최근 7일"){var c=new Date();c.setDate(c.getDate()-7);d=d.filter(function(r){return new Date(r.date)>=c})}
+  else if(dr==="최근 30일"){var c2=new Date();c2.setDate(c2.getDate()-30);d=d.filter(function(r){return new Date(r.date)>=c2})}
+  document.getElementById('resetBtn').style.display=(dr!=="전체"||rg!=="전체"||tm!=="전체")?'inline-block':'none';
+  return d;
+}
+function resetFilters(){document.getElementById('fDate').value="전체";document.getElementById('fRegion').value="전체";document.getElementById('fTeam').value="전체";renderDashboard()}
+
+// ─── Render Dashboard ───
+function renderDashboard(){
+  var f=getFiltered();var t=f.length;
+  document.getElementById('totalCount').textContent=t;
+  var recR=pct(f.filter(function(r){return r.q15==="네"}).length,t);
+  var evtR=pct(f.filter(function(r){return r.q18==="네"}).length,t);
+
+  // KPIs
+  document.getElementById('kpiRow').innerHTML=
+    kpiHTML("📊","총 응답수",t+"건","추천율 "+recR+"%")+
+    kpiHTML("⭐","제품 평균",avg(f,"q8"),"5점 만점")+
+    kpiHTML("🔧","시공 평균",avg(f,"q11"),"5점 만점")+
+    kpiHTML("💬","상담 평균",avg(f,"q13"),"5점 만점")+
+    kpiHTML("🎁","후기이벤트",evtR+"%",f.filter(function(r){return r.q18==="네"}).length+"명 참여");
+
+  // Confirm rates
+  var preY=pct(f.filter(function(r){return r.q5==="네"}).length,t);
+  var postY=pct(f.filter(function(r){return r.q6==="네"}).length,t);
+  var warY=pct(f.filter(function(r){return r.q7==="네"}).length,t);
+  document.getElementById('confirmRow').innerHTML=
+    confirmHTML("시공 전 설명",preY)+confirmHTML("시공 후 안내",postY)+confirmHTML("품질보증서 확인",warY);
+
+  // Rating bars
+  document.getElementById('ratingBars').innerHTML=
+    ratingBarHTML("제품","q8",f,t)+ratingBarHTML("시공","q11",f,t)+ratingBarHTML("상담","q13",f,t);
+
+  // Team table
+  var teams=countBy(f,"q10");
+  var th='<table><thead><tr><th>시공팀</th><th>응답</th><th>제품</th><th>시공</th><th>상담</th><th>추천율</th></tr></thead><tbody>';
+  teams.forEach(function(tm){
+    var rows=f.filter(function(r){return r.q10===tm.name});
+    var rr=pct(rows.filter(function(r){return r.q15==="네"}).length,rows.length);
+    var bg=parseFloat(rr)>=80?"#E8F3E6":"#F5EDD3";
+    var cl=parseFloat(rr)>=80?"#2D5A27":"#8A6D1B";
+    th+='<tr><td style="font-weight:500;white-space:nowrap">'+tm.name+'</td><td>'+tm.value+'</td><td style="font-weight:600;color:#2D5A27">'+avg(rows,"q8")+'</td><td style="font-weight:600;color:#2D5A27">'+avg(rows,"q11")+'</td><td style="font-weight:600;color:#2D5A27">'+avg(rows,"q13")+'</td><td><span style="background:'+bg+';color:'+cl+';padding:2px 8px;border-radius:4px;font-weight:600">'+rr+'%</span></td></tr>';
+  });
+  th+='</tbody></table>';
+  document.getElementById('teamTable').innerHTML=th;
+
+  // Channel chart (horizontal bar)
+  var ch=countBy(f,"q16");var maxCh=ch.length?ch[0].value:1;
+  var chH='';ch.forEach(function(c,i){
+    var w=Math.round((c.value/maxCh)*100);
+    chH+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="width:110px;font-size:12px;text-align:right;flex-shrink:0;color:#6B6B6B">'+c.name+'</span><div style="flex:1;background:#f0f0ec;border-radius:4px;height:24px;overflow:hidden"><div style="width:'+w+'%;height:100%;background:'+COLORS[i%COLORS.length]+';border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#fff;font-weight:600">'+c.value+'</div></div></div>';
+  });
+  document.getElementById('channelChart').innerHTML=chH;
+
+  // Reason chart
+  var rs2=countBy(f,"q17");
+  var rsH='';rs2.forEach(function(r,i){
+    var p=t>0?((r.value/t)*100).toFixed(1):"0";
+    rsH+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:14px;height:14px;border-radius:4px;background:'+COLORS[i%COLORS.length]+';flex-shrink:0"></div><span style="flex:1;font-size:13px">'+r.name+'</span><span style="font-size:13px;font-weight:600;color:#2D5A27">'+r.value+'건 ('+p+'%)</span></div>';
+  });
+  document.getElementById('reasonChart').innerHTML=rsH;
+
+  // Response table
+  var rt='<table><thead><tr><th>#</th><th>일자</th><th>성함</th><th>지역</th><th>제품</th><th>시공</th><th>상담</th><th>추천</th><th>시공팀</th></tr></thead><tbody>';
+  f.forEach(function(r,i){
+    rt+='<tr><td style="color:#999">'+r.id+'</td><td style="white-space:nowrap">'+r.date+'</td><td style="font-weight:500">'+r.name+'</td><td style="white-space:nowrap">'+r.region+' '+r.subRegion+'</td>';
+    rt+=badgeTD(r.q8)+badgeTD(r.q11)+badgeTD(r.q13);
+    rt+='<td>'+(r.q15==="네"?"✅":r.q15==="아니오"?"❌":"➖")+'</td><td style="font-size:12px;white-space:nowrap">'+r.q10+'</td></tr>';
+  });
+  rt+='</tbody></table>';
+  document.getElementById('responseTable').innerHTML=rt;
+}
+
+// ─── Helpers ───
+function kpiHTML(icon,label,val,sub){return'<div class="kpi"><div class="kpi-top"><div class="kpi-icon">'+icon+'</div><span class="kpi-label">'+label+'</span></div><div class="kpi-val">'+val+'</div><div class="kpi-sub">'+sub+'</div></div>'}
+function confirmHTML(label,val){var c=parseFloat(val)>=90?"#2D5A27":parseFloat(val)>=70?"#C8A951":"#D94444";return'<div class="confirm-item"><div class="confirm-label">'+label+'</div><span class="confirm-val" style="color:'+c+'">'+val+'%</span><div class="confirm-bar"><div class="confirm-bar-fill" style="width:'+val+'%;background:'+c+'"></div></div></div>'}
+function ratingBarHTML(label,key,data,total){
+  var segs='';RATINGS.forEach(function(r){var cnt=data.filter(function(d){return d[key]===r}).length;var p=total>0?(cnt/total)*100:0;if(p>0)segs+='<div class="rating-seg" style="width:'+p+'%;background:'+RCOLORS[r]+'" title="'+r+': '+cnt+'건 ('+p.toFixed(1)+'%)">'+(p>8?r:'')+'</div>'});
+  return'<div class="rating-bar"><div class="rating-bar-head"><span>'+label+'</span><span>'+avg(data,key)+' / 5.00</span></div><div class="rating-bar-track">'+segs+'</div></div>';
+}
+function badgeTD(val){var bg=RCOLORS[val]+"18";return'<td><span class="badge-rating" style="background:'+bg+';color:'+RCOLORS[val]+'">'+val+'</span></td>'}
+</script>
+</body>
+</html>
