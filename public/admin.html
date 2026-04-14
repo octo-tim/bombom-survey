@@ -175,7 +175,7 @@ tbody tr:nth-child(even){background:#fafaf7}
     <div class="sec-title"><div class="ico">📋</div><h2>시공 안내 확인율</h2></div>
     <div class="confirm-row" id="confirmRow"></div>
     <div class="sec-title"><div class="ico">⭐</div><h2>종합 평가 분석</h2></div>
-    <div class="chart-grid"><div class="chart-card"><div class="chart-card-title">평가 분포 (제품 · 시공 · 상담)</div><div id="ratingBars"></div></div><div class="chart-card"><div class="chart-card-title">시공팀별 평균 점수</div><div class="team-table" id="teamTable"></div></div></div>
+    <div class="chart-grid"><div class="chart-card"><div class="chart-card-title">평가 분포 (제품 · 시공 · 상담)</div><div id="ratingBars"></div></div><div class="chart-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div class="chart-card-title" style="margin-bottom:0">시공팀별 평균 점수</div><button onclick="downloadTeamExcel()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--b);background:#fff;font-size:12px;font-family:inherit;font-weight:600;color:var(--p);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s" onmouseover="this.style.background='var(--pp)'" onmouseout="this.style.background='#fff'">📥 엑셀 다운로드</button></div><div class="team-table" id="teamTable"></div></div></div>
     <div class="sec-title"><div class="ico">📣</div><h2>유입 경로 & 선택 이유</h2></div>
     <div class="chart-grid"><div class="chart-card"><div class="chart-card-title">유입 경로 (Q16)</div><div id="channelChart"></div></div><div class="chart-card"><div class="chart-card-title">선택 이유 (Q17)</div><div id="reasonChart"></div></div></div>
     <div class="sec-title"><div class="ico">📝</div><h2>전체 응답 내역</h2></div>
@@ -282,13 +282,18 @@ function renderDashboard(){
 
   // Team table
   var teams=countBy(f,"q10");
-  var th='<table><thead><tr><th>시공팀</th><th>응답</th><th>제품</th><th>시공</th><th>상담</th><th>추천율</th></tr></thead><tbody>';
+  var th='<table><thead><tr><th>시공팀</th><th>응답</th><th>제품</th><th>시공</th><th>상담</th><th style="color:var(--p)">총 평균</th><th>추천율</th></tr></thead><tbody>';
+  window._teamData=[];
   teams.forEach(function(tm){
     var rows=f.filter(function(r){return r.q10===tm.name});
+    var a8=avg(rows,"q8"),a11=avg(rows,"q11"),a13=avg(rows,"q13");
+    var totalAvg=((parseFloat(a8)+parseFloat(a11)+parseFloat(a13))/3).toFixed(2);
     var rr=pct(rows.filter(function(r){return r.q15==="네"}).length,rows.length);
     var bg=parseFloat(rr)>=80?"#E8F3E6":"#F5EDD3";
     var cl=parseFloat(rr)>=80?"#2D5A27":"#8A6D1B";
-    th+='<tr><td style="font-weight:500;white-space:nowrap">'+tm.name+'</td><td>'+tm.value+'</td><td style="font-weight:600;color:#2D5A27">'+avg(rows,"q8")+'</td><td style="font-weight:600;color:#2D5A27">'+avg(rows,"q11")+'</td><td style="font-weight:600;color:#2D5A27">'+avg(rows,"q13")+'</td><td><span style="background:'+bg+';color:'+cl+';padding:2px 8px;border-radius:4px;font-weight:600">'+rr+'%</span></td></tr>';
+    var tavgBg=parseFloat(totalAvg)>=4.5?"#2D5A27":parseFloat(totalAvg)>=3.5?"#4A8B3F":parseFloat(totalAvg)>=2.5?"#C8A951":"#D94444";
+    window._teamData.push({team:tm.name,count:tm.value,product:a8,service:a11,consult:a13,totalAvg:totalAvg,recommend:rr});
+    th+='<tr><td style="font-weight:500;white-space:nowrap">'+tm.name+'</td><td>'+tm.value+'</td><td style="font-weight:600;color:#2D5A27">'+a8+'</td><td style="font-weight:600;color:#2D5A27">'+a11+'</td><td style="font-weight:600;color:#2D5A27">'+a13+'</td><td><span style="background:'+tavgBg+';color:#fff;padding:3px 10px;border-radius:6px;font-weight:700;font-size:13px">'+totalAvg+'</span></td><td><span style="background:'+bg+';color:'+cl+';padding:2px 8px;border-radius:4px;font-weight:600">'+rr+'%</span></td></tr>';
   });
   th+='</tbody></table>';
   document.getElementById('teamTable').innerHTML=th;
@@ -328,6 +333,28 @@ function ratingBarHTML(label,key,data,total){
   return'<div class="rating-bar"><div class="rating-bar-head"><span>'+label+'</span><span>'+avg(data,key)+' / 5.00</span></div><div class="rating-bar-track">'+segs+'</div></div>';
 }
 function badgeTD(val){var bg=RCOLORS[val]+"18";return'<td><span class="badge-rating" style="background:'+bg+';color:'+RCOLORS[val]+'">'+val+'</span></td>'}
+
+// ─── Excel Download ───
+function downloadTeamExcel(){
+  if(!window._teamData||!window._teamData.length){alert('다운로드할 데이터가 없습니다.');return}
+  var BOM='\uFEFF';
+  var csv=BOM+'시공팀,응답수,제품평균,시공평균,상담평균,총평균,추천율(%)\n';
+  window._teamData.forEach(function(r){
+    csv+=r.team+','+r.count+','+r.product+','+r.service+','+r.consult+','+r.totalAvg+','+r.recommend+'\n';
+  });
+  // Add summary row
+  var f=getFiltered();var t=f.length;
+  if(t>0){
+    var allAvg=(((parseFloat(avg(f,'q8'))+parseFloat(avg(f,'q11'))+parseFloat(avg(f,'q13')))/3)).toFixed(2);
+    csv+='\n전체 평균,'+t+','+avg(f,'q8')+','+avg(f,'q11')+','+avg(f,'q13')+','+allAvg+','+pct(f.filter(function(r){return r.q15==="네"}).length,t)+'\n';
+  }
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var today=new Date().toISOString().slice(0,10);
+  a.href=url;a.download='봄봄매트_시공팀별_평가_'+today+'.csv';a.click();
+  URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>
