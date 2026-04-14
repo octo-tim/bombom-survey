@@ -200,10 +200,30 @@ function loadData(callback){
   .then(function(data){
     DATA=data.map(function(r,i){
       r.id=r.id||i+1;
-      r.q8=r.q8_product||r.q8||'';
-      r.q11=r.q11_service||r.q11||'';
-      r.q13=r.q13_consult||r.q13||'';
+      // 키 매핑: 설문 제출 키 → 관리자 조회 키
+      if(!r.q8 && r.q8_product) r.q8=r.q8_product;
+      if(!r.q11 && r.q11_service) r.q11=r.q11_service;
+      if(!r.q13 && r.q13_consult) r.q13=r.q13_consult;
+      if(!r.q10 && r.q10_team) r.q10=r.q10_team;
+      if(!r.q9 && r.q9_reason) r.q9=r.q9_reason;
+      if(!r.q12 && r.q12_reason) r.q12=r.q12_reason;
+      if(!r.q14 && r.q14_reason) r.q14=r.q14_reason;
+      if(!r.q19 && r.q19_etc) r.q19=r.q19_etc;
+      r.q8=r.q8||'';
+      r.q10=r.q10||'';
+      r.q11=r.q11||'';
+      r.q13=r.q13||'';
       r.date=r.date||(r.timestamp?r.timestamp.slice(0,10):'');
+      r.region=r.region||'';
+      r.subRegion=r.subRegion||'';
+      r.name=r.name||'';
+      r.q15=r.q15||'';
+      r.q16=r.q16||'';
+      r.q17=r.q17||'';
+      r.q18=r.q18||'';
+      r.q5=r.q5||'';
+      r.q6=r.q6||'';
+      r.q7=r.q7||'';
       return r;
     });
     if(callback)callback();
