@@ -179,7 +179,20 @@ tbody tr:nth-child(even){background:#fafaf7}
     <div class="sec-title"><div class="ico">📣</div><h2>유입 경로 & 선택 이유</h2></div>
     <div class="chart-grid"><div class="chart-card"><div class="chart-card-title">유입 경로 (Q16)</div><div id="channelChart"></div></div><div class="chart-card"><div class="chart-card-title">선택 이유 (Q17)</div><div id="reasonChart"></div></div></div>
     <div class="sec-title"><div class="ico">📝</div><h2>전체 응답 내역</h2></div>
-    <div class="chart-card"><div class="overflow-x" id="responseTable"></div></div>
+    <div class="chart-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:600;color:var(--ts)">기간:</span>
+          <input type="date" id="respDateFrom" onchange="renderResponseTable()" style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--b);background:#fff;font-size:13px;font-family:inherit;color:var(--t);outline:none">
+          <span style="font-size:13px;color:var(--ts)">~</span>
+          <input type="date" id="respDateTo" onchange="renderResponseTable()" style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--b);background:#fff;font-size:13px;font-family:inherit;color:var(--t);outline:none">
+          <button onclick="resetRespDate()" style="padding:7px 14px;border-radius:8px;border:1px solid var(--b);background:#fff;font-size:12px;font-family:inherit;font-weight:500;color:var(--ts);cursor:pointer">초기화</button>
+          <span style="font-size:12px;color:var(--ts)" id="respCount"></span>
+        </div>
+        <button onclick="downloadResponseExcel()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--b);background:#fff;font-size:12px;font-family:inherit;font-weight:600;color:var(--p);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='var(--pp)'" onmouseout="this.style.background='#fff'">📥 응답 엑셀 다운로드</button>
+      </div>
+      <div class="overflow-x" id="responseTable"></div>
+    </div>
   </div>
 </div>
 
@@ -364,6 +377,27 @@ function renderDashboard(){
   document.getElementById('reasonChart').innerHTML=rsH;
 
   // Response table
+  renderResponseTable();
+}
+
+// ─── Response Table with date filter ───
+function getResponseFiltered(){
+  var f=getFiltered();
+  var from=document.getElementById('respDateFrom').value;
+  var to=document.getElementById('respDateTo').value;
+  if(from) f=f.filter(function(r){return r.date>=from});
+  if(to) f=f.filter(function(r){return r.date<=to});
+  return f;
+}
+function resetRespDate(){
+  document.getElementById('respDateFrom').value='';
+  document.getElementById('respDateTo').value='';
+  renderResponseTable();
+}
+function renderResponseTable(){
+  var f=getResponseFiltered();
+  document.getElementById('respCount').textContent=f.length+'건 조회';
+  window._respData=f;
   var rt='<table><thead><tr><th>#</th><th>일자</th><th style="text-align:center">완료</th><th>성함</th><th>연락처</th><th>지역</th><th>제품</th><th>시공</th><th>상담</th><th>추천</th><th>시공팀</th></tr></thead><tbody>';
   f.forEach(function(r,i){
     var ck=r.checked?'checked':'';
@@ -400,7 +434,27 @@ function toggleCheck(id,checked){
   if(item) item.checked=checked;
 }
 
-// ─── Excel Download ───
+// ─── Response Excel Download ───
+function downloadResponseExcel(){
+  var f=window._respData||getResponseFiltered();
+  if(!f.length){alert('다운로드할 데이터가 없습니다.');return}
+  var BOM='\uFEFF';
+  var csv=BOM+'#,일자,완료,성함,연락처,지역,세부지역,제품평가,제품평가이유,시공팀,시공평가,시공평가이유,상담평가,상담평가이유,추천여부,유입경로,선택이유,후기이벤트,시공전안내,시공후안내,품질보증서,건의사항\n';
+  f.forEach(function(r){
+    var esc=function(v){v=String(v||'');if(v.indexOf(',')>-1||v.indexOf('"')>-1||v.indexOf('\n')>-1)return'"'+v.replace(/"/g,'""')+'"';return v};
+    csv+=r.id+','+esc(r.date)+','+(r.checked?'O':'')+',' +esc(r.name)+','+esc(r.phone)+','+esc(r.region)+','+esc(r.subRegion)+','+esc(r.q8)+','+esc(r.q9)+','+esc(r.q10)+','+esc(r.q11)+','+esc(r.q12)+','+esc(r.q13)+','+esc(r.q14)+','+esc(r.q15)+','+esc(r.q16)+','+esc(r.q17)+','+esc(r.q18)+','+esc(r.q5)+','+esc(r.q6)+','+esc(r.q7)+','+esc(r.q19)+'\n';
+  });
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var from=document.getElementById('respDateFrom').value;
+  var to=document.getElementById('respDateTo').value;
+  var suffix=from||to?('_'+(from||'start')+'~'+(to||'end')):'_전체';
+  a.href=url;a.download='봄봄매트_설문응답'+suffix+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Excel Download (Team) ───
 function downloadTeamExcel(){
   if(!window._teamData||!window._teamData.length){alert('다운로드할 데이터가 없습니다.');return}
   var BOM='\uFEFF';
