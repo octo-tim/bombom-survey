@@ -71,6 +71,26 @@ app.get("/api/responses", (req, res) => {
   }
 });
 
+// ─── API: Update checked status ───
+app.post("/api/check", (req, res) => {
+  try {
+    const { id, checked } = req.body;
+    if (!id) return res.status(400).json({ error: "id 필수" });
+    const responses = readResponses();
+    const item = responses.find(r => r.id === id);
+    if (item) {
+      item.checked = !!checked;
+      saveResponses(responses);
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: "응답을 찾을 수 없습니다." });
+    }
+  } catch (e) {
+    console.error("체크 상태 저장 오류:", e);
+    res.status(500).json({ error: "서버 오류" });
+  }
+});
+
 // ─── Pages ───
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
