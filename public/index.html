@@ -99,6 +99,13 @@
   .opt-label:has(input:checked) .radio-dot { border-color: var(--accent); }
   .opt-label:has(input:checked) .radio-dot::after { content: ''; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; }
 
+  /* Checkbox */
+  .check-box { width: 22px; height: 22px; border: 2px solid #ccc; border-radius: 6px; flex-shrink: 0; position: relative; transition: all 0.2s; }
+  .opt-label:has(input[type="checkbox"]:checked) .check-box { border-color: var(--accent); background: var(--accent); }
+  .opt-label:has(input[type="checkbox"]:checked) .check-box::after { content: '✓'; position: absolute; top: -1px; left: 4px; color: #fff; font-size: 14px; font-weight: 700; }
+  .opt-label:has(input[type="checkbox"]:checked) { border-color: var(--accent); background: var(--accent-bg); font-weight: 500; }
+  .q-sub-enter { animation: fadeUp 0.3s ease both; }
+
   /* Rating */
   .rating-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
   .rating-btn {
@@ -295,6 +302,17 @@
       </div>
       <div class="error-msg">필수 항목입니다.</div>
     </div>
+    <div class="q-group" id="q11sub" data-type="checkbox" style="display:none">
+      <label class="q-label"><span class="num">11-1</span>불만족 항목을 선택해주세요. (중복 가능)<span class="req">*</span></label>
+      <div class="options">
+        <label class="opt-label"><input type="checkbox" name="q11_sub" value="시공기사 친절도"><span class="check-box"></span>시공기사 친절도</label>
+        <label class="opt-label"><input type="checkbox" name="q11_sub" value="시공 마감 상태"><span class="check-box"></span>시공 마감 상태</label>
+        <label class="opt-label"><input type="checkbox" name="q11_sub" value="시공 후 정리정돈"><span class="check-box"></span>시공 후 정리정돈</label>
+        <label class="opt-label"><input type="checkbox" name="q11_sub" value="방문시간 준수"><span class="check-box"></span>방문시간 준수</label>
+        <label class="opt-label"><input type="checkbox" name="q11_sub" value="시공 진행 시간 준수"><span class="check-box"></span>시공 진행 시간 준수</label>
+      </div>
+      <div class="error-msg">하나 이상 선택해주세요.</div>
+    </div>
     <div class="q-group" data-required>
       <label class="q-label"><span class="num">12</span>시공서비스 평가의 이유는 무엇입니까?<span class="req">*</span></label>
       <textarea class="textarea" name="q12_reason" placeholder="시공 서비스에 대한 의견을 자유롭게 작성해주세요."></textarea>
@@ -401,7 +419,30 @@
         group.querySelectorAll('.rating-btn').forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
         btn.closest('.q-group').classList.remove('error');
+        // Q11 조건부 표시
+        if (group.dataset.name === 'q11_service') {
+          var val = btn.dataset.value;
+          var sub = document.getElementById('q11sub');
+          if (val === '보통' || val === '부족함' || val === '나쁨') {
+            sub.style.display = 'block';
+            sub.classList.add('q-sub-enter');
+            sub.setAttribute('data-required', '');
+          } else {
+            sub.style.display = 'none';
+            sub.removeAttribute('data-required');
+            sub.classList.remove('error');
+            sub.querySelectorAll('input[type="checkbox"]').forEach(function(c) { c.checked = false; });
+          }
+        }
       });
+    });
+  });
+  // 체크박스 에러 해제
+  document.querySelectorAll('input[type="checkbox"]').forEach(function(el) {
+    el.addEventListener('change', function() {
+      var g = el.closest('.q-group');
+      if (g && g.querySelector('input[type="checkbox"]:checked')) g.classList.remove('error');
+      updateProgress();
     });
   });
   document.querySelectorAll('.text-input, .textarea, .select-input').forEach(function(el) {
@@ -421,6 +462,7 @@
     var type = g.dataset.type;
     if (type === 'rating') return g.querySelector('.rating-btn.active') !== null;
     if (type === 'radio') return g.querySelector('input[type="radio"]:checked') !== null;
+    if (type === 'checkbox') return g.querySelector('input[type="checkbox"]:checked') !== null;
     var inp = g.querySelector('.text-input, .textarea, .select-input');
     return inp && inp.value.trim() !== '';
   }
@@ -440,6 +482,8 @@
     ['q5','q6','q7','q15','q16','q17','q18'].forEach(function(name) { var checked = form.querySelector('input[name="'+name+'"]:checked'); data[name] = checked ? checked.value : ''; });
     document.querySelectorAll('.rating-group').forEach(function(group) { var active = group.querySelector('.rating-btn.active'); data[group.dataset.name] = active ? active.dataset.value : ''; });
     data.q9_reason = form.q9_reason.value; data.q10_team = form.q10_team.value; data.q12_reason = form.q12_reason.value; data.q14_reason = form.q14_reason.value; data.q19_etc = form.q19_etc.value;
+    // Q11 불만족 항목 수집
+    var q11subs = []; form.querySelectorAll('input[name="q11_sub"]:checked').forEach(function(c) { q11subs.push(c.value); }); data.q11_sub = q11subs.join(', ');
     console.log('Survey Data:', data);
     // 서버 전송
     var submitBtn = document.querySelector('.submit-btn');
